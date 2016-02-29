@@ -18,21 +18,29 @@ public class ReverseProxyServer {
 
     public static void main(final String[] args) throws Exception {
 
-        final Undertow server1 = Undertow.builder().addHttpListener(8081, "localhost").setHandler(exchange -> {
+        String bindAddress = System.getProperty("bind.address", "localhost");
+
+        final Undertow server1 = Undertow.builder().addHttpListener(8081, bindAddress).setHandler(exchange -> {
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
-            exchange.getResponseSender().send("Web Server");
+            exchange.getResponseSender().send("Digger Web Server");
+
+        }).build();
+
+        final Undertow server2 = Undertow.builder().addHttpListener(8082, bindAddress).setHandler(exchange -> {
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/plain");
+            exchange.getResponseSender().send("Digger API Server");
 
         }).build();
 
         server1.start();
 
+        server2.start();
+
         HttpHandler handler = Handlers.predicates(PredicatedHandlersParser.parse(
-                "equals[%{LOCAL_SERVER_NAME}, 'diggerapi.localhost'] -> reverse-proxy[{'http://localhost:8080'}]\n"
+                "equals[%{LOCAL_SERVER_NAME}, 'diggerapi.localhost'] -> reverse-proxy[{'http://localhost:8082'}]\n"
                         + "equals[%{LOCAL_SERVER_NAME}, 'diggerweb.localhost'] -> reverse-proxy[{'http://localhost:8081'}]",
                 ReverseProxyServer.class.getClassLoader()), ResponseCodeHandler.HANDLE_404);
         SSLHeaderHandler sslhandler = new SSLHeaderHandler(new ProxyPeerAddressHandler(handler));
-
-        String bindAddress = System.getProperty("bind.address", "localhost");
 
         Undertow reverseProxy = Undertow.builder().setServerOption(UndertowOptions.ENABLE_HTTP2, true)
                 .setServerOption(UndertowOptions.ENABLE_SPDY, true).addHttpListener(80, bindAddress)
