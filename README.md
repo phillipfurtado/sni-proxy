@@ -1,6 +1,6 @@
 # sni-proxy
 
-Para utilizar o proxy reverso via undertown
+1. Para utilizar o proxy reverso via undertown
 
 Instale utilizando o Maven
 
@@ -10,7 +10,7 @@ Execute via
 
 `# sudo java -jar target/embedded-app/app.jar`
 
-Para instalar e executar o proxy reverso via nginx
+2. Para instalar e executar o proxy reverso via nginx
 
 Instale e execute via
 
